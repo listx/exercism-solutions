@@ -7,25 +7,19 @@
   (last birds))
 
 (defn inc-bird [birds]
-  (assoc birds
-         (- (count birds) 1)
-         (+ 1 (last birds))))
+  (update birds (dec (count birds)) inc))
 
 (defn day-without-birds? [birds]
-  (let [birdless-day (some #(= 0 %) birds)]
-    ; In Clojure, `nil` is not falsy (see `(false? nil)` which
-    ; returns false). So we have to return `false` explicitly.
-    (if birdless-day true false)))
+  (not (every? pos? birds)))
 
 (defn n-days-count [birds n]
-  (let [subarray (subvec birds 0 n)]
-    (reduce #(+ %1 %2) 0 subarray)))
+  (reduce + (take n birds)))
 
 (defn busy-days [birds]
-    (reduce #(+ %1 (if (>= %2 5) 1 0)) 0 birds))
+  (count (filter #(>= % 5) birds)))
 
 (defn odd-week? [birds]
   (let [even-idx-counts (take-nth 2 (drop 1 birds))
-        odd-idx-counts (take-nth 2 birds)]
+        odd-idx-counts  (take-nth 2 birds)]
     (and (every? #(= 0 %) even-idx-counts)
          (every? #(= 1 %) odd-idx-counts))))
