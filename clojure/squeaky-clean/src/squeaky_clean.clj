@@ -7,15 +7,16 @@
 
 (defn clean-ctrl-chars
   [s]
-  (str/replace s #"[\u0000-\u001F]|[\u007f-\u009f]" "CTRL"))
+  (str/replace s #"\p{Cc}" "CTRL"))
 
 (defn clean-snake
   [s]
-  (str/replace s #"-(\S)" #(.toUpperCase (%1 1))))
+  (str/replace s #"-(\p{L})" #(str/upper-case (%1 1))))
 
 (defn clean-non-word-char
+  "Preserves underscores, but removes other non-word characters."
   [s]
-  (str/replace s #"[^\p{IsAlphabetic}]" #(if (= %1 "_") "_" "")))
+  (str/replace s #"[^\p{L}]" #(if (= %1 "_") "_" "")))
 
 (defn clean-greek-lowercase
   [s]
