@@ -17,7 +17,7 @@
   "Takes a list of rounds played and a round number.
    Returns `true` if the round is in the list, `false` if not."
   [l n]
-  (true? (some #(= n %) l)))
+  (boolean (some #{n} l)))
 
 (defn card-average
   "Returns the average value of a hand"
@@ -40,16 +40,16 @@
   "Returns true if the average of the cards at even indexes 
    is the same as the average of the cards at odd indexes."
   [hand]
-  (let [even-idx-hand (take-nth 2 (drop 1 hand))
-        odd-idx-hand  (take-nth 2 hand)
-        even-idx-avg (card-average even-idx-hand)
-        odd-idx-avg (card-average odd-idx-hand)]
-    (= even-idx-avg odd-idx-avg)))
+  (let [evens (take-nth 2 (drop 1 hand))
+        odds  (take-nth 2 hand)
+        even-avg (card-average evens)
+        odd-avg  (card-average odds)]
+    (= even-avg odd-avg)))
 
 (defn maybe-double-last
   "If the last card is a Jack (11), doubles its value
    before returning the hand."
   [hand]
   (if (= 11 (last hand))
-    (concat (take (dec (count hand)) hand) (list 22))
+    (concat (butlast hand) '(22))
     hand))
