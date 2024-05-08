@@ -3,12 +3,12 @@
 (defn first-card
   "Returns the first card from deck."
   [deck]
-  (let [[a _] deck] a))
+  (let [[a] deck] a))
 
 (defn second-card
   "Returns the second card from deck."
   [deck]
-  (let [[_ b _] deck] b))
+  (let [[_ b] deck] b))
 
 (defn swap-top-two-cards
   "Returns the deck with first two items reversed."
@@ -29,7 +29,4 @@
 (defn insert-face-cards
   "Returns the deck with face cards between its head and tail."
   [deck]
-  (let [[a & rest] deck]
-    (if (= 0 (count deck))
-      face-cards
-      (concat [a] face-cards rest))))
+  (concat (take 1 deck) face-cards (drop 1 deck)))
