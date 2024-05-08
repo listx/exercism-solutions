@@ -6,10 +6,16 @@
   [divisor n]
   (= 0 (rem n divisor)))
 
+(defmacro blurter
+  "Return a string `s` if the given number is divisible by `divisor`. Otherwise
+  return an empty string."
+  ([divisor s]
+   `#(if (divisible-by? ~divisor %) ~s "")))
+
 (defn convert [n]
-  (let [plinger #(if (divisible-by? 3 %) "Pling" "")
-        planger #(if (divisible-by? 5 %) "Plang" "")
-        plonger #(if (divisible-by? 7 %) "Plong" "")
+  (let [plinger (blurter 3 "Pling")
+        planger (blurter 5 "Plang")
+        plonger (blurter 7 "Plong")
         substrs (str/join ((juxt plinger planger plonger) n))]
     (if (str/blank? substrs)
       (str n)
