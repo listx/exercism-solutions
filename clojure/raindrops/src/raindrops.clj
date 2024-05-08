@@ -1,5 +1,4 @@
-(ns raindrops
-  (:require [clojure.string :as str]))
+(ns raindrops)
 
 (defn divisible-by?
   "Return true if n can be divided evenly (no remainder) by the divisor."
