@@ -4,19 +4,11 @@
 (defn divisible-by?
   "Return true if n can be divided evenly (no remainder) by the divisor."
   [divisor n]
-  (= 0 (rem n divisor)))
-
-(defmacro blurter
-  "Return a string `s` if the given number is divisible by `divisor`. Otherwise
-  return an empty string."
-  ([divisor s]
-   `#(if (divisible-by? ~divisor %) ~s "")))
+  (zero? (mod n divisor)))
 
 (defn convert [n]
-  (let [plinger (blurter 3 "Pling")
-        planger (blurter 5 "Plang")
-        plonger (blurter 7 "Plong")
-        substrs (str/join ((juxt plinger planger plonger) n))]
-    (if (str/blank? substrs)
-      (str n)
-      substrs)))
+  (cond-> nil
+    (divisible-by? 3 n) (str "Pling")
+    (divisible-by? 5 n) (str "Plang")
+    (divisible-by? 7 n) (str "Plong")
+    :else (or (str n))))
