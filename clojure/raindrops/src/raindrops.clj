@@ -11,4 +11,4 @@
     (divisible-by? 3 n) (str "Pling")
     (divisible-by? 5 n) (str "Plang")
     (divisible-by? 7 n) (str "Plong")
-    :else (or (str n))))
+    :always (or (str n))))
