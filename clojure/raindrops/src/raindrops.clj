@@ -1,4 +1,5 @@
-(ns raindrops)
+(ns raindrops
+  (:require [clojure.string :as str]))
 
 (defn divisible-by?
   "Return true if n can be divided evenly (no remainder) by the divisor."
@@ -6,17 +7,10 @@
   (= 0 (rem n divisor)))
 
 (defn convert [n]
-  (cond
-    ((every-pred (partial divisible-by? 3)
-                 (partial divisible-by? 5)
-                 (partial divisible-by? 7)) n) "PlingPlangPlong"
-    ((every-pred (partial divisible-by? 3)
-                 (partial divisible-by? 5)) n) "PlingPlang"
-    ((every-pred (partial divisible-by? 3)
-                 (partial divisible-by? 7)) n) "PlingPlong"
-    ((every-pred (partial divisible-by? 5)
-                 (partial divisible-by? 7)) n) "PlangPlong"
-    (divisible-by? 3 n) "Pling"
-    (divisible-by? 5 n) "Plang"
-    (divisible-by? 7 n) "Plong"
-    :else (str n)))
+  (let [plinger #(if (divisible-by? 3 %) "Pling" "")
+        planger #(if (divisible-by? 5 %) "Plang" "")
+        plonger #(if (divisible-by? 7 %) "Plong" "")
+        substrs (str/join ((juxt plinger planger plonger) n))]
+    (if (str/blank? substrs)
+      (str n)
+      substrs)))
