@@ -1,12 +1,10 @@
 (ns triangle)
 
 (defn is-valid? [a b c]
-  (and (> (+ a b) c)
-       (> (+ a c) b)
-       (> (+ b c) a)
-       (pos? a)
-       (pos? b)
-       (pos? c)))
+  (and (every? pos? [a b c])
+       (>= (+ a b) c)
+       (>= (+ a c) b)
+       (>= (+ b c) a)))
 
 (defn equilateral?
   [a b c]
@@ -25,6 +23,4 @@
 (defn scalene? [a b c]
   (and
     (is-valid? a b c)
-    (not= a b)
-    (not= a c)
-    (not= b c)))
+    (distinct? a b c)))
