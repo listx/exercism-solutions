@@ -1,125 +1,99 @@
 (ns say
   (:require [clojure.string :as str]))
 
-(def low-words
-  ["zero"
-   "one"
-   "two"
-   "three"
-   "four"
-   "five"
-   "six"
-   "seven"
-   "eight"
-   "nine"
-   "ten"
-   "eleven"
-   "twelve"
-   "thirteen"
-   "fourteen"
-   "fifteen"
-   "sixteen"
-   "seventeen"
-   "eighteen"
-   "nineteen"])
-
-(def billion  1000000000)
-(def million  1000000)
-(def thousand 1000)
-(def hundred  100)
-
-(def scalers
-  {20 "twenty"
+(def ^:private ^:const leaf
+  {0 "zero"
+   1 "one"
+   2 "two"
+   3 "three"
+   4 "four"
+   5 "five"
+   6 "six"
+   7 "seven"
+   8 "eight"
+   9 "nine"
+   10 "ten"
+   11 "eleven"
+   12 "twelve"
+   13 "thirteen"
+   14 "fourteen"
+   15 "fifteen"
+   16 "sixteen"
+   17 "seventeen"
+   18 "eighteen"
+   19 "nineteen"
+   20 "twenty"
    30 "thirty"
    40 "forty"
    50 "fifty"
    60 "sixty"
    70 "seventy"
    80 "eighty"
-   90 "ninety"
-   hundred "hundred"
-   thousand "thousand"
-   million "million"
-   billion "billion"})
+   90 "ninety"})
 
-(defn sub-units
-  "Subtract units from the number. Given a vec of [num parts] (e.g., [34 [...]]),
-  subtract the unit quantity from num (34 in the example) and append the amount
-  subtracted to [...]."
-  [show-coeff unit tuple]
-  (let [[num parts] tuple
-        coeff (quot num unit)
-        remaining (- num (* coeff unit))]
-    (if (pos? coeff)
-      [remaining
-       (if show-coeff
-          (conj parts coeff (get scalers unit))
-          (conj parts (get scalers unit)))]
-      tuple)))
+(def ^:private ^:const units
+  [[1000000000 "billion"]
+   [1000000    "million"]
+   [1000       "thousand"]
+   [100        "hundred"]])
 
-(defn lo-num
-  "Convert a number between 19 and 1 to prose."
-  [maybe-dash tuple]
-  (let [[num parts] tuple
-        word (get low-words num)]
-    (if (pos? num)
-      (conj parts (str maybe-dash word))
-      parts)))
+(defn- to-prose
+  "Convert an integer between 0 and 999999999999 (inclusive) into prose. Convert
+  the number into a vec if necessary, where the last element of the vec is the
+  remaining integer number that still needs to be converted. E.g., the
+  'iterative' view of this function for the number 123555 will look something
+  like:
 
-(defn med-num
-  "Convert a number between 999 and 1 to prose."
-  [tuple]
-  (let [[num _] tuple
-        maybe-dash (if (> num 20) "-" "")]
-    (cond->> tuple
-      (>= (first tuple) hundred)  (sub-units true hundred)
-      (>= (first tuple) 90)       (sub-units false 90)
-      (>= (first tuple) 80)       (sub-units false 80)
-      (>= (first tuple) 70)       (sub-units false 70)
-      (>= (first tuple) 60)       (sub-units false 60)
-      (>= (first tuple) 50)       (sub-units false 50)
-      (>= (first tuple) 40)       (sub-units false 40)
-      (>= (first tuple) 30)       (sub-units false 30)
-      (>= (first tuple) 20)       (sub-units false 20)
-      (pos? (first tuple))        (lo-num maybe-dash))))
+    [\"one hundred twenty-three\" \"thousand\" 555]
 
-(defn drop-leading-zero
-  [ps]
-  (let [[leading & rest] ps]
-    (if (and (int? leading)
-             (zero? leading))
-      rest
-      ps)))
+    [\"one hundred twenty-three\" \"thousand\"
+      (str/join \" \" [\"five hundred\" 55])]
 
-; Given an integer `num`, create a tuple of [num parts] where parts is a list of
-; integers and strings, where the integers need to be converted to strings. We
-; keep getting rid of integers in `parts` until there are no more. At this point
-; we concatenate the string together. The `num` is repeatedly subtracted until
-; we reach 0; at each step of the subtraction, we append the integer/string
-; representation of the subtracted amount to `parts`.
-(defn hi-num [num]
-  (let [tuple [num []]]
-    (cond->> tuple
-      (>= (first tuple) billion)  (sub-units true billion)
-      (>= (first tuple) million)  (sub-units true million)
-      (>= (first tuple) thousand) (sub-units true thousand)
-      :always                     ((comp drop-leading-zero
-                                         flatten
-                                         med-num)))))
+    [\"one hundred twenty-three\" \"thousand\"
+      (str/join \" \" [\"five hundred\"
+        (str/join [\"fifty-five\" 0])])]
 
-(defn valid? [num]
-  (when (not (< -1 num 999999999999))
-    (throw (IllegalArgumentException. "Number out of bounds."))))
+    [\"one hundred twenty-three\" \"thousand\"
+      (str/join \" \" [\"five hundred\"
+        (str/join [\"fifty-five\" nil])])]
 
-(defn number [num]
-  (valid? num)
-  (if (= num 0)
-    "zero"
-    (let [parts (hi-num num)
-          ps (if (= (count (filter int? parts)) 0)
-               parts
-               (flatten (map #(if (int? %)
-                                (number %)
-                                %) parts)))
-          joined (str/join " " ps)]
-    (str/replace joined " -" "-"))))
+  at which point the recursion terminates and the stack can be reduced like
+
+    [\"one hundred twenty-three\" \"thousand\"
+      (str/join \" \" [\"five hundred\" \"fifty-five\"])]
+
+    [\"one hundred twenty-three\" \"thousand\" \"five hundred fifty-five\"]
+
+  and so on back to just
+
+    \"one hundred twenty-three thousand five hundred fifty-five\"
+
+  with the final str/join call.
+
+  This fn uses recursion to build up the stack."
+  [n]
+  (cond
+        ;; A "leaf" number is a number that can no longer be broken down into
+        ;; smaller sub-parts. It's a direct hashmap lookup.
+        (contains? leaf n) (leaf n)
+        ;; If the number is 21-99, then add a hyphen.
+        (< n 100) (let [r (rem n 10)]
+                      (str (to-prose (- n r)) "-" (to-prose r)))
+        :else
+          (let [
+                ;; Find the largest unit (e.g., billion) that fits into the
+                ;; number.
+                [[unit unit-desc]] (drop-while (fn [[unit]] (< n unit)) units)
+                ;; Get the "coefficient" of the largest unit that fits. If the
+                ;; number is 55123 then `coeff` = "fifty-five" and `r` = 123.
+                [coeff-str r]      ((juxt (comp to-prose quot) rem) n unit)
+                ;; Expand any remaining coefficient.
+                expanded           (when (pos? r) (to-prose r))]
+            (->> [coeff-str unit-desc expanded]
+                 (str/join " ")
+                 str/trimr))))
+
+(defn number [n]
+  (if (not (<= 0 n 999999999999))
+    (throw (IllegalArgumentException. "Number out of bounds."))
+    (to-prose n)))
