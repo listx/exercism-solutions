@@ -42,7 +42,6 @@
    million "million"
    billion "billion"})
 
-
 (defn sub-units
   "Subtract units from the number. Given a vec of [num parts] (e.g., [34 [...]]),
   subtract the unit quantity from num (34 in the example) and append the amount
@@ -50,14 +49,13 @@
   [show-coeff unit tuple]
   (let [[num parts] tuple
         coeff (quot num unit)
-        remaining (- num (* coeff unit))
-        ]
+        remaining (- num (* coeff unit))]
     (if (pos? coeff)
-    [remaining
-     (if show-coeff
-        (conj parts coeff (get scalers unit))
-        (conj parts (get scalers unit)))]
-    tuple)))
+      [remaining
+       (if show-coeff
+          (conj parts coeff (get scalers unit))
+          (conj parts (get scalers unit)))]
+      tuple)))
 
 (defn lo-num
   "Convert a number between 19 and 1 to prose."
@@ -93,30 +91,35 @@
       rest
       ps)))
 
+; Given an integer `num`, create a tuple of [num parts] where parts is a list of
+; integers and strings, where the integers need to be converted to strings. We
+; keep getting rid of integers in `parts` until there are no more. At this point
+; we concatenate the string together. The `num` is repeatedly subtracted until
+; we reach 0; at each step of the subtraction, we append the integer/string
+; representation of the subtracted amount to `parts`.
 (defn hi-num [num]
-  (cond
-    (or (< num 0)
-        (> num 999999999999)) (throw (IllegalArgumentException.))
-    :else
-      (let [tuple [num []]]
-        (cond->> tuple
-          (>= (first tuple) billion)  (sub-units true billion)
-          (>= (first tuple) million)  (sub-units true million)
-          (>= (first tuple) thousand) (sub-units true thousand)
-          (pos? (first tuple))        (med-num)
-          :always                     (flatten)
-          :always                     (drop-leading-zero)
-          :always                     (vec)
-          ))))
+  (let [tuple [num []]]
+    (cond->> tuple
+      (>= (first tuple) billion)  (sub-units true billion)
+      (>= (first tuple) million)  (sub-units true million)
+      (>= (first tuple) thousand) (sub-units true thousand)
+      :always                     ((comp drop-leading-zero
+                                         flatten
+                                         med-num)))))
+
+(defn valid? [num]
+  (when (not (< -1 num 999999999999))
+    (throw (IllegalArgumentException. "Number out of bounds."))))
 
 (defn number [num]
-  (cond
-    (= num 0) "zero"
-    :else
-      (let [parts (hi-num num)
+  (valid? num)
+  (if (= num 0)
+    "zero"
+    (let [parts (hi-num num)
           ps (if (= (count (filter int? parts)) 0)
                parts
                (flatten (map #(if (int? %)
                                 (number %)
-                                %) parts)))]
-      (str/replace (str/join " " ps) " -" "-"))))
+                                %) parts)))
+          joined (str/join " " ps)]
+    (str/replace joined " -" "-"))))
