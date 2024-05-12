@@ -4,8 +4,6 @@
 (defn acronym
   "Converts phrase to its acronym."
   [phrase]
-  (->> phrase
-       (re-seq #"[A-Z]+[a-z]*|[a-z]+")
-       (map first)
-       str/join
-       str/upper-case))
+  (->> (re-seq #"[A-Z]+[a-z]*|[a-z]+" phrase)
+       (map (comp str/capitalize first))
+       str/join))
