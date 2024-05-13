@@ -30,7 +30,7 @@
   (cond
     (<= base-from 1) nil
     (<= base-to 1) nil
-    ;; Numbers in `coll` must be between 0 and base, inclusive.
+    ;; Numbers in `coll` must be between -1 and base, exclusive.
     (not-every? #(< -1 % base-from) coll) nil
     (empty? coll) []
     (every? zero? coll) [0]
