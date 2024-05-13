@@ -1,50 +1,39 @@
 (ns all-your-base)
 
 (defn to-integer
-  "Convert `digits` using base `base` into an integer."
-  [coll base]
+  "Convert `coll` digits using base `base` into an integer. The key is to set up a
+  list of powers using the base (e.g., [1 2 4 8 16] for base 2), and then
+  multiplying each one with the given digits in `coll`."
+  [base coll]
   (->> (iterate (partial * base) 1)
        (map * (reverse coll))
        (apply +)))
 
 (defn from-integer
-  "Convert an integer `n` to base `base` using positional notation."
-  [n base]
+  "Convert an integer `n` to base `base` using positional notation. The trick is
+  to just divide repeatedly by the base, until we hit 0. Then we take the last
+  digit of each one via the modulus."
+  [base n]
   (->> (iterate #(quot % base) n)
        (take-while pos?)
        reverse
        (map #(mod % base))))
 
-(defn valid-digits?
-  "Check if the `digits` are valid given the `base`. E.g., for binary the only
-  valid digits are 0 and 1."
-  [digits base]
-  (let [valid-digits (take base (iterate inc 0))
-
-        digit-checks (map (fn [digit]
-                            (some #(= % digit) valid-digits))
-                          digits)]
-    (not (some nil? digit-checks))))
-
 (defn convert
-  "Convert digits in digits-from (using base-from) to another list of digits
+  "Convert digits in `coll` (using base-from) to another list of digits
   using base-to.
 
   First we need to convert the digits into an integer primitive type which is
   base-agnostic. Then we can convert the integer to the target base using
   positional notation."
-  [base-from digits-from base-to]
+  [base-from coll base-to]
   (cond
-    (some #(= base-from %) [-1 0 1])                nil
-    (some #(= base-to   %) [-1 0 1])                nil
-    (some #(= -1 %) digits-from)                    nil
-    (not (valid-digits? digits-from base-from))     nil
-    (< base-from 0)                                 nil
-    (< base-to 0)                                   nil
-    (empty? digits-from)                            []
-    :else (let [converted (from-integer
-                           (to-integer digits-from base-from)
-                           base-to)]
-            (if (empty? converted)
-              '(0)
-              converted))))
+    (<= base-from 1) nil
+    (<= base-to 1) nil
+    ;; Numbers in `coll` must be between 0 and base, inclusive.
+    (not-every? #(< -1 % base-from) coll) nil
+    (empty? coll) []
+    (every? zero? coll) [0]
+    :else (->> coll
+               (to-integer base-from)
+               (from-integer base-to))))
