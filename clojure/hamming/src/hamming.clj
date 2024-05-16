@@ -1,5 +1,8 @@
 (ns hamming)
 
-(defn distance [strand1 strand2] ; <- arglist goes here
-  ;; your code goes here
-)
+(defn distance [s1 s2]
+  (when (= (count s1) (count s2))
+    (->> (mapcat (comp vector
+                       #(if (= % %2) 0 1))
+                 s1 s2)
+         (apply +))))
