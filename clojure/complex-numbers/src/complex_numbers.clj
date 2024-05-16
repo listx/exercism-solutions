@@ -1,14 +1,11 @@
-(ns complex-numbers
-  (:require [clojure.math :as math]))
+(ns complex-numbers)
 
-(defn real [[a _]]
-  a)
+(def real first)
 
-(defn imaginary [[_ b]]
-  b)
+(def imaginary second)
 
 (defn abs [[a b]]
-  (math/sqrt (+ (* a a)
+  (Math/sqrt (+ (* a a)
                 (* b b))))
 
 (defn conjugate [[a b]]
