@@ -11,8 +11,6 @@
   (every? dna->rna dna))
 
 (defn to-rna [dna]
-  (when-not (valid-dna? dna)
-    (throw (AssertionError.)))
-  (->> (seq dna)
-       (map dna->rna)
+  (assert (valid-dna? dna))
+  (->> (map dna->rna dna)
        (apply str)))
