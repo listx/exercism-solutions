@@ -1,37 +1,49 @@
 (ns pig-latin
   (:require [clojure.string :as str]))
 
-(defn starts-with-vowel? [s]
-  (or
-    (#{\a \e \i \o \u} (first s))
-    (str/starts-with? s "xr")
-    (str/starts-with? s "yt")))
+(def vowel? (set "aeiou"))
 
-(defn flipped-y [s]
-  (->> (re-find #"^([^aeiou]+)(y.*)" s)
-       (drop 1)
-       reverse
+(def consonant? (complement vowel?))
+
+(def non-y-consonant?
+  "Is this letter a consonant that is also not 'y'?"
+  (every-pred consonant? (partial not= \y)))
+
+(defn special-leading-vowel-cluster? [word]
+  (some (partial str/starts-with? word)
+        ["xr" "yt"]))
+
+;; "cc" here means "consonant cluster".
+(defn y-after-cc? [cc rst]
+  (and (empty? cc)
+       (= \y (first rst))))
+
+(defn qu-after-cc? [cc rst]
+  (and (= \q (last cc))
+       (= \u (first rst))))
+
+(defn split-consonant [word]
+  (let [[cc tail] (->> (split-with non-y-consonant? word)
+                       (map (partial apply str)))
+        ;; `tail-chopped` is the tail without its first letter.
+        tail-chopped (apply str (rest tail))]
+    (cond
+      (special-leading-vowel-cluster? word) [word]
+      ;; For a word with a "y" that follows a consonant cluster, move the "y" to
+      ;; the end.
+      (y-after-cc? cc tail) [tail-chopped "y"]
+      ;; For "square", tail-chopped is "are" and "cc" is "sq". Move the "u" to
+      ;; the end.
+      (qu-after-cc? cc tail) [tail-chopped cc "u"]
+      ;; Move the leading consonant cluster to the end.
+      :else [tail cc])))
+
+(defn piggify [word]
+  ;; A piggified word always ends in "ay".
+  (->> (conj (split-consonant word) "ay")
        (apply str)))
 
-(defn flipped-leading-consonant-cluster [s]
-  (->> (re-find #"^([^aeiou]+)(.*)" s)
-       (drop 1)
-       reverse
-       (apply str)))
-
-(defn translate-word [s]
-  (let [flipped (flipped-leading-consonant-cluster s)
-        flipped-with-y (flipped-y s)]
-  (cond
-    (starts-with-vowel? s) (str s "ay")
-    flipped (if (and (str/ends-with? flipped "q") (= \u (first flipped)))
-              (str (apply str (drop 1 flipped)) \u "ay")
-              (str flipped "ay"))
-
-    (and flipped-with-y (str/includes? s "y")) (str flipped-with-y "ay")
-    :else s)))
-
-(defn translate [s]
-  (->> (str/split s #" ")
-    (map translate-word)
-    (str/join " ")))
+(defn translate [phrase]
+  (->> (str/split phrase #" ")
+       (map piggify)
+       (str/join " ")))
