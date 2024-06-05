@@ -1,31 +1,30 @@
 (ns run-length-encoding)
 
+(defn encode
+  [[fst & rst :as entire]]
+  ;; For "xxx", "rst" is "xx" so it is truthy (not nil).
+  (cond->> fst
+    rst (str (count entire))))
+
 (defn run-length-encode
   "encodes a string with run-length-encoding"
   [plain-text]
-  (->> (partition-by identity plain-text)
-       (reduce (fn [acc, elt]
-                 (str acc
-                      (when (< 1 (count elt)) (count elt))
-                      (first elt)))
-               "")))
+  (->> plain-text
+       (partition-by identity)
+       (map encode)
+       (apply str)))
 
-; See https://stackoverflow.com/a/18624940/437583 for more.
-(defn- digit? [c]
-  (and (>= 0 (compare \0 c))
-       (>= 0 (compare c \9))))
-
-(defn- expand [s]
-  (if (digit? (first s))
-    (let [[n [c]] (split-with digit? s)]
-      (->> (repeat (Integer. (apply str n)) c)
-           (apply str)))
-    s))
+(defn decode
+  [[_ n ltr]]
+  (cond->> ltr
+    n (repeat (Integer/parseInt n))))
 
 (defn run-length-decode
   "decodes a run-length-encoded string"
   [cipher-text]
-  (->> (re-seq #"[A-Za-z ]+|[0-9]+[A-Za-z ]" cipher-text)
-       (reduce (fn [acc, elt]
-                 (str acc (expand elt)))
-               "")))
+  (->> cipher-text
+       ;; Example: user> (re-seq #"(\d+)?(\D)" "3a2bc")
+                   ;; => (["3a" "3" "a"] ["2b" "2" "b"] ["c" nil "c"])
+       (re-seq #"(\d+)?(\D)")
+       (mapcat decode)
+       (apply str)))
