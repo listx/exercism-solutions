@@ -1,5 +1,14 @@
 (ns sum-of-multiples)
 
-(defn sum-of-multiples [] ;; <- arglist goes here
-      ;; your code goes here
-)
+(defn multiples-of [n]
+  (map #(* n %) (iterate inc 1)))
+
+(defn sum-of-multiples [base-vals level]
+  (->> base-vals
+       (map multiples-of)
+       (map (fn [multiples]
+              (take-while #(< % level)
+                          multiples)))
+       flatten
+       set
+       (apply +)))
