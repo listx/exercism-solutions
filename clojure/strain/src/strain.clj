@@ -1,9 +1,17 @@
 (ns strain)
 
-(defn retain [] ;; <- arglist goes here
-      ;; your code goes here
-)
+(defn retain [p arr]
+  (loop [[fst & rst :as coll] arr
+         result []]
+    (cond
+      (empty? coll) result
+      (p fst)       (recur rst (conj result fst))
+      :else         (recur rst result))))
 
-(defn discard [] ;; <- arglist goes here
-  ;; your code goes here
-)
+(defn discard [p arr]
+  (loop [[fst & rst :as coll] arr
+         result []]
+    (cond
+      (empty? coll) result
+      (p fst)       (recur rst result)
+      :else         (recur rst (conj result fst)))))
