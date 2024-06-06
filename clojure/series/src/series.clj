@@ -1,5 +1,7 @@
 (ns series)
 
-(defn slices [string length] ;; <- arglist goes here
-  ;; your code goes here
-)
+(defn slices [string length]
+  (if (zero? length)
+    [""]
+    (->> (partition length 1 string)
+         (map #(apply str %)))))
