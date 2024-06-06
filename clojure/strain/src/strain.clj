@@ -9,9 +9,4 @@
       :else         (recur rst result))))
 
 (defn discard [p arr]
-  (loop [[fst & rst :as coll] arr
-         result []]
-    (cond
-      (empty? coll) result
-      (p fst)       (recur rst result)
-      :else         (recur rst (conj result fst)))))
+  (retain (complement p) arr))
