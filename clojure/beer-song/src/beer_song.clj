@@ -18,7 +18,7 @@
 (defn sing
   "Given a start and an optional end, returns all verses in this interval. If
   end is not given, the whole song from start is sung."
-  [start & end]
-  (->> (for [n (range start (dec (or (first end) 0)) -1)]
-         (verse n))
-       (join "\n")))
+  ([n]   (sing n 0))
+  ([n k] (->> (range n (dec k) -1)
+              (map verse)
+              (join "\n"))))
