@@ -1,24 +1,22 @@
 (ns change)
 
-(defn largest-fitting-coin [sum coins]
-  (->> coins
-       (into '())
-       sort
-       reverse
-       (drop-while #(< sum %))
-       first))
+(defmacro ex->nil
+  "Executes body, catching any Exceptions and returning nil instead"
+  [& body]
+  `(try ~@body (catch Exception _#)))
 
-(defn issue [sum coins]
-  (when (neg? sum)
-    (throw (IllegalArgumentException. "cannot change")))
-  (when (< sum (->> coins (into '()) sort first))
-    (throw (IllegalArgumentException. "cannot change")))
+(defn throw-when
+  "If (pred x) is truthy, throws ex. Otherwise, returns x"
+  [pred ex x]
+  (when (pred x) (throw ex))
+  x)
 
-  (loop [remaining sum
-         coin (largest-fitting-coin sum coins)
-         result ()]
-    (if (zero? remaining)
-      result
-      (recur (- remaining coin)
-             (largest-fitting-coin (- remaining coin) coins)
-             (cons coin result)))))
+(def issue
+  (memoize
+   (fn [n coins]
+     (when-not (zero? n)
+       (->> (filter #(<= % n) coins)
+            (keep #(ex->nil (cons % (issue (- n %) coins))))
+            (throw-when empty? (IllegalArgumentException. "cannot change"))
+            (apply min-key count)
+            sort)))))
