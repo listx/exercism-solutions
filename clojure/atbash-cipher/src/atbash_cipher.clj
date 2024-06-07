@@ -1,5 +1,5 @@
 (ns atbash-cipher
-  (:require [clojure.string :refer [lower-case]]))
+  (:require [clojure.string :refer [join lower-case]]))
 
 (def encoder
   (let [letters "abcdefghijklmnopqrstuvwxyz"]
@@ -7,15 +7,11 @@
 
 (defn encode [s]
   (->> s
-       (reduce (fn [[out n] ch]
-                 (let [addable (Character/isLetterOrDigit ch)]
-                   (if addable
-                     [(cond-> out
-                        (and (pos? n) (zero? (rem n 5))) (str " ")
-                        :always (str (if (Character/isLetter ch)
-                                       (encoder (first (lower-case ch)))
-                                       ch)))
-                      (inc n)]
-                     [out n])))
-               ["" 0])
-       first))
+       (filter #(Character/isLetterOrDigit %))
+       ;; We have to use `first` because `lower-case` returns a string, not a
+       ;; character.
+       (map (comp first lower-case))
+       (map #(or (encoder %) %))
+       (partition-all 5)
+       (map (partial apply str))
+       (join " ")))
