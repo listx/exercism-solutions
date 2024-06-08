@@ -1,9 +1,9 @@
 (ns grains)
 
 (defn square [n]
-  (->> (dec n)
-       (nth (iterate #(* 2 %)
-                     (bigint 1)))))
+  (.shiftLeft
+   (biginteger 1)
+   (dec n)))
 
 (defn total []
   (->> (range 1 65)
