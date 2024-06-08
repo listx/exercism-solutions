@@ -1,9 +1,11 @@
 (ns grains)
 
-(defn square [] ;; <- arglist goes here
-    ;; your code goes here
-)
+(defn square [n]
+  (->> (dec n)
+       (nth (iterate #(* 2 %)
+                     (bigint 1)))))
 
-(defn total []  ;; <- arglist goes here
-    ;; your code goes here
-)
+(defn total []
+  (->> (range 1 65)
+       (map square)
+       (apply +)))
