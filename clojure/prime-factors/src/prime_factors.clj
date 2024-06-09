@@ -1,14 +1,14 @@
 (ns prime-factors)
 
 (defn of [n]
-  (loop [[factor & rst :as factors] (iterate inc 2)
+  (loop [factor 2
          remaining n
          result []]
     (cond
       (= 1 remaining) result
-      (zero? (rem remaining factor)) (recur factors
+      (zero? (rem remaining factor)) (recur factor
                                             (quot remaining factor)
                                             (conj result factor))
-      :else                          (recur rst
+      :else                          (recur (inc factor)
                                             remaining
                                             result))))
