@@ -1,5 +1,9 @@
-(ns isogram)
+(ns isogram
+  (:require [clojure.string :as str]))
 
-(defn isogram? [] ;; <- arglist goes here
-  ;; your code goes here
-)
+(defn isogram? [s]
+  (->> (#(str/replace s #"[ -]" ""))
+       str/lower-case
+       frequencies
+       vals
+       (every? #(= 1 %))))
