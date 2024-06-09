@@ -1,9 +1,7 @@
 (ns isogram
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :refer [lower-case]]))
 
 (defn isogram? [s]
-  (->> (#(str/replace s #"[ -]" ""))
-       str/lower-case
-       frequencies
-       vals
-       (every? #(= 1 %))))
+  (->> (lower-case s)
+       (remove #{\space \-})
+       (apply distinct?)))
