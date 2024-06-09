@@ -1,7 +1,7 @@
 (ns kindergarten-garden
   (:require [clojure.string :as str]))
 
-;; Create a list containing 2 items, one for each row.
+;; Create a list of lists, each list containing the 4 plants for each student.
 (defn parse-plants [plants]
   (->> ;; => "CGRV\nCGRV"
        plants
@@ -15,15 +15,16 @@
                    \R :radishes
                    \V :violets} %))
 
-       ;; Note that this is a list of 2 lists now, one for each row. The key is
-       ;; that the plants are grouped into pairs. The key idea here is to assign
-       ;; one row correctly to each student, and to repeat this procedure again
-       ;; for the second row. Then we can just merge the two results together to
-       ;; get the combined answer where each student is responsible for both
-       ;; rows.
+       ;; Note that this is a list of 2 lists now, one for each row. But we
+       ;; would like to "pull out" the columns of each row and put them
+       ;; together...
        ;;
        ;; => (((:clover :grass) (:radishes :violets)) ((:clover :grass) (:radishes :violets)))
-       (map #(partition 2 %))))
+       (map #(partition 2 %))
+
+       ;; ... and that's what we do here. Pulling out the columns with mapv is a
+       ;; common trick.
+       (apply mapv concat)))
 
 (defn normalize-students [students]
   (->> (sort students)
@@ -45,5 +46,4 @@
                      "Larry"]))
   ([plants students]
    (->> (parse-plants plants)
-        (map #(zipmap (normalize-students students) %))
-        (apply merge-with concat))))
+        (zipmap (normalize-students students)))))
