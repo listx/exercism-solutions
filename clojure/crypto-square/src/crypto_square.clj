@@ -33,8 +33,8 @@
 
 (defn ciphertext [s]
   (->> (ciphertext-rect s)
-       (apply str)
-       (#(str/replace % " " ""))))
+       (map str/trim)
+       str/join))
 
 (defn normalize-ciphertext [s]
   (->> (ciphertext-rect s)
