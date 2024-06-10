@@ -22,9 +22,9 @@
 (defn plaintext-segments [s]
   (->> (normalize-plaintext s)
        (#(partition-all (square-size %) %))
-       (mapv (partial apply str))))
+       (map (partial apply str))))
 
-(defn ciphertext-rect [s]
+(defn ciphertext-segments [s]
   (->> (normalize-plaintext s)
        (#(partition (square-size %)
                     (square-size %)
@@ -32,10 +32,10 @@
        (apply map str)))
 
 (defn ciphertext [s]
-  (->> (ciphertext-rect s)
+  (->> (ciphertext-segments s)
        (map str/trim)
        str/join))
 
 (defn normalize-ciphertext [s]
-  (->> (ciphertext-rect s)
+  (->> (ciphertext-segments s)
        (str/join " ")))
