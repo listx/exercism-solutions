@@ -10,17 +10,16 @@
 ;; cats (128)
 
 (def allergens
-  (zipmap (iterate (partial * 2) 1)
-          [:eggs
-           :peanuts
-           :shellfish
-           :strawberries
-           :tomatoes
-           :chocolate
-           :pollen
-           :cats]))
+  [:eggs
+   :peanuts
+   :shellfish
+   :strawberries
+   :tomatoes
+   :chocolate
+   :pollen
+   :cats])
 
-(defn to-binary-digits [n]
+(defn to-bits [n]
   (loop [num n
          result ()]
     (cond
@@ -29,12 +28,14 @@
                    (cons (rem num 2) result)))))
 
 (defn allergies [n]
-  (->> (to-binary-digits n)
+  (->> (to-bits n)
        reverse
-       (map * (iterate (partial * 2) 1))
-       (keep allergens)))
+       (mapv (fn [allergen bit]
+               (when (pos? bit)
+                 allergen))
+             allergens)
+       (remove nil?)))
 
 (defn allergic-to? [n allergen]
   (->> (allergies n)
-       (keep #{allergen})
-       seq))
+       (some #{allergen})))
