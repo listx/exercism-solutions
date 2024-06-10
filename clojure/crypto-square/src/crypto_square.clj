@@ -24,14 +24,11 @@
        (#(partition-all (square-size %) %))
        (mapv (partial apply str))))
 
-(defn pad-with-trailing-spaces [s n]
-  (take n (concat s (repeat \space))))
-
 (defn ciphertext-rect [s]
-  (->> (plaintext-segments s)
-       (#(conj (into '[] (butlast %))
-               (pad-with-trailing-spaces (last %)
-                                         (count (first %)))))
+  (->> (normalize-plaintext s)
+       (#(partition (square-size %)
+                    (square-size %)
+                    (repeat \space) %))
        (apply map str)))
 
 (defn ciphertext [s]
