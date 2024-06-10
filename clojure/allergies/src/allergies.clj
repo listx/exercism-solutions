@@ -19,22 +19,9 @@
    :pollen
    :cats])
 
-(defn to-bits [n]
-  (loop [num n
-         result ()]
-    (cond
-      (zero? num) result
-      :else (recur (quot num 2)
-                   (cons (rem num 2) result)))))
-
 (defn allergies [n]
-  (->> (to-bits n)
-       reverse
-       (mapv (fn [allergen bit]
-               (when (pos? bit)
-                 allergen))
-             allergens)
-       (remove nil?)))
+  (keep-indexed #(when (bit-test n %) %2)
+                allergens))
 
 (defn allergic-to? [n allergen]
   (->> (allergies n)
