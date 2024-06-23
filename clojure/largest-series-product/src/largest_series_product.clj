@@ -13,8 +13,8 @@
    \9 9N})
 
 (defn largest-product [n digits]
-  (let [groups (partition n 1 digits)
-        products (->> groups
-                      (map #(map char-to-digit %))
-                      (map #(apply * %)))]
-  (apply max products)))
+  (->> digits
+       (partition n 1)
+       (map #(map char-to-digit %))
+       (map #(apply * %))
+       (apply max)))
