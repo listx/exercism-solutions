@@ -5,7 +5,7 @@
   return -1."
   [[y x] m]
   (try (aget m y x)
-       (catch ArrayIndexOutOfBoundsException _ -1)))
+       (catch Exception _ -1)))
 
 (defn walk-spiral
   "Walk a spiral around a matrix until we run out of room (until we're done)."
