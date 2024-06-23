@@ -9,7 +9,7 @@
 
 (defn walk-spiral
   "Walk a spiral around a matrix until we run out of room (until we're done)."
-  [[m [y x]]]
+  [m [y x]]
   (let [old-val (aget m y x)
         north [(dec y) x]
         south [(inc y) x]
@@ -39,7 +39,7 @@
         (aset m y-new x-new (inc old-val))
         ;; Now that `m` is mutated, return it along with the direction `dir` we
         ;; used.
-        (walk-spiral [m dir])))))
+        (walk-spiral m dir)))))
 
 (defn spiral [n]
   (case n
@@ -48,7 +48,7 @@
                  to-array-2d)]
       ;; Set top-left corner to 1.
       (aset m 0 0 1)
-      (->> (walk-spiral [m [0 0]])
+      (->> (walk-spiral m [0 0])
            ;; Visually this looks correct at this point like [[...]] (probably
            ;; because of our use of `to-array-2d`), but the tests require lists,
            ;; not vectors, so we have to convert it as such.
