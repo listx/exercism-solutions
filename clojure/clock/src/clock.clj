@@ -34,3 +34,24 @@
   (let [clock-with-hours (add-hours [0 0] hours)
         clock-with-hours-and-minutes (add-minutes clock-with-hours minutes)]
     clock-with-hours-and-minutes))
+
+;; NOTE: https://exercism.org/tracks/clojure/exercises/clock/solutions/amirci
+;; (reproduced below) is far more elegant, because it stores the time as units
+;; of minutes only. This is like how we store UNIX time as seconds which makes
+;; it easy to represent it in days, hours, minutes, etc. The lesson here is that
+;; if we simplify the data model (here into a single unit of measurement instead
+;; of 2 units of measurement as we did above, represnting the clock as [hours
+;; minutes]), it simplifies everything.
+
+;; (defn clock->string [clock]
+;;   (format "%02d:%02d"
+;;           (quot clock 60)
+;;           (mod clock 60)))
+;;
+;; (def dim (* 24 60))
+;;
+;; (defn add-time [clock time]
+;;   (mod (+ clock time) dim))
+;;
+;; (defn clock [hours minutes]
+;;   (add-time 0 (+ minutes (* hours 60))))
