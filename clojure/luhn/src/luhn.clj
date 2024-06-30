@@ -15,9 +15,8 @@
                  reverse
                  (map vector (cycle [1 2]))
                  (map (partial apply *))
-                 (map #(if (< 9 %)
-                         (- % 9)
-                         %))
+                 (map #(cond-> %
+                         (< 9 %) (- 9)))
                  (apply +)
                  (#(rem % 10))
                  zero?))))
