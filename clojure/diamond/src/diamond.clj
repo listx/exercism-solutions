@@ -1,22 +1,30 @@
 (ns diamond)
 
 (defn diamond [c]
-  (let [offset (->> \A
+  (let [
+        ;; Create helper function.
+        join (partial apply str)
+
+        offset (->> \A
                     int
                     (- (int c)))
+
         ;; Create substrings that are the "right" half of lines. E.g., for \C,
         ;; this would be
         ;;
         ;;  ["A  "
         ;;   " B "
         ;;   "  C"]
-        substrs (for [x (range (inc offset))]
-                  (str (->> (repeat x \space)
-                            (apply str))
-                       (->> (+ x (int \A))
-                            char)
-                       (->> (repeat (- offset x) \space)
-                            (apply str))))
+        ;;
+        ;; Do this by creating a string "   " and then place the A, B and C into
+        ;; position in the correct index.
+        substrs (for [i (range (inc offset))]
+                  (->> (repeat (inc offset) \space)
+                       vec
+                       (#(assoc-in % [i] (->> (+ i (int \A))
+                                              char)))
+                       join))
+
         ;; Mirror the right part of each substr over to the left. So now it
         ;; would look like
         ;;
@@ -25,11 +33,12 @@
         ;;   "C   C"]
         lines (map #(str (->> (drop 1 %)
                               reverse
-                              (apply str))
+                              join)
                          %)
                    substrs)
-        ;; Repeat all but the last line and put it at the end, giving us the
-        ;; final diamond shape like this
+
+        ;; Mirror the lines up top (all but the last) and put it at the end,
+        ;; giving us the final diamond shape like this
         ;;
         ;;  ["  A  "
         ;;   " B B "
